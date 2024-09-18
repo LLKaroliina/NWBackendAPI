@@ -9,7 +9,13 @@ namespace NWBackendAPI.Controllers
     public class CustomersController : ControllerBase
     {
         //LUODAAN INSTANSSI TIETOKANTAKONTEKSTILUOKASTA. MYÖS DB= NEW()
-        NorthwindOriginalContext db = new NorthwindOriginalContext();
+        //private readonly northwindOriginalContext db = new northwindOriginalContext();
+        //DI TYYLI
+        private readonly northwindOriginalContext db;
+        public CustomersController(northwindOriginalContext dbparametri)
+        {
+            db = dbparametri;
+        }
         //HAKEE KAIKKI ASIAKKAAT
         [HttpGet]
         //PALAUTETAAN STATUS KOODI JA MUKANA KULKEE JOKU VIESTI
@@ -43,7 +49,7 @@ namespace NWBackendAPI.Controllers
                 return Ok(asiakas);
             }
             catch (Exception ex)
-            { 
+            {
                 return BadRequest($"Tapahtui virhe. Lue lisää: {ex.Message}");
             }
 
@@ -60,14 +66,14 @@ namespace NWBackendAPI.Controllers
         }
         //ASIAKKAAN POISTAMINEN URRL PARAMETRINA ANNETTAVAN ID:N PERUSTEELLA
         [HttpDelete("{id}")]
-        public ActionResult RemoveCustomerById(string id) 
+        public ActionResult RemoveCustomerById(string id)
         {
             //TRY CATCH VIRHEENKÄSITTELY
             try
             {
 
                 var asiakas = db.Customers.Find(id);
-                
+
                 if (asiakas != null) //JOS ASIAKAS EI OLE NULL
                 {
                     //ASIAKKAAN POISTO TIETOKANNASTA
@@ -76,12 +82,12 @@ namespace NWBackendAPI.Controllers
                     //VIESTI FRONTTISOVELLUKSELLE
                     return Ok($"Poistettiin asiakas: {asiakas.CompanyName}");
 
-                   
+
                 }
                 else
                 {
                     return NotFound($"Asiakasta id:llä {id} ei löytynyt poistettavaksi");
-                    
+
                 }
             }
             catch (Exception ex)
@@ -90,6 +96,38 @@ namespace NWBackendAPI.Controllers
             }
 
         }
+        //ASIAKKAAN HAKU COMPANYNAMEN PERUSTEELLA(OSA NIMESTÄ RIITTÄÄ)
+        [HttpGet("compname/{cname}")]
+        public ActionResult SearchCustomerByCompanyName(string cname)
+        {//WHERE VOI MILLÄ KENTÄN TIEDOLLA HAKEA, FIND VAIN PK
+            var asiakkaat = db.Customers.Where(c => c.CompanyName.Contains(cname));
+            //var asiakkaat = db.Customers.Where(c => c.CompanyName==cname);//HAKUSANA PITÄÄ OLLA TÄYDELLINEN
+            // var asiakkaat = from c db.Customers where c.CompanyName.Contains(cname).ToList();//PERINTEINEN LINQ
+            return Ok(asiakkaat);
+
+        }
+        //ASIAKKAAN MUOKKAUS, MUISTA HAKEA ENSIN ASIAKKAAN TIEDOT POHJALLE
+        [HttpPut("{id})")]
+        //PARAMETRI VASTAANOTTAA TIEDOT
+        public ActionResult EditCustomer(string id, [FromBody] Customer customer)
+        {
+            //HAETAAN ID:N PERUSTEELLA TIETOKANNASTA VANHA ASIAKASOBJEKTI
+            var asiakas = db.Customers.Find(id);
+            if (asiakas!=null)
+            { 
+                //EM.ASIAKASOBJEKTIIN SIJOITETAAN PAREMETRINA SAADUN ASIAKKAAN TIEDOT
+                asiakas = customer;
+                db.SaveChanges();
+                return Ok("Muokattu asiakasta " + asiakas.CompanyName);
+            }
+            else
+            {
+                return NotFound("Asiakasta ei löytynyt id:llä" + id);
+            }
+            
+        }
+
+
 
     }
 }

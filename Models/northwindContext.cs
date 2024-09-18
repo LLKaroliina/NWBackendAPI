@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace NWBackendAPI.Models
 {
-    public partial class northwindOriginalContext : DbContext
+    public partial class northwindContext : DbContext
     {
-        public northwindOriginalContext()
+        public northwindContext()
         {
         }
 
-        public northwindOriginalContext(DbContextOptions<northwindOriginalContext> options)
+        public northwindContext(DbContextOptions<northwindContext> options)
             : base(options)
         {
         }
@@ -51,9 +51,8 @@ namespace NWBackendAPI.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                //To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                return;
-                //optionsBuilder.UseSqlServer(tässä oli connectionstring);
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=KarkkiLenovo\\SQLEXPRESS01;Database=NorthwindOriginal;Trusted_Connection=True;");
             }
         }
 
@@ -206,6 +205,8 @@ namespace NWBackendAPI.Models
 
             modelBuilder.Entity<Documentation>(entity =>
             {
+                entity.HasNoKey();
+
                 entity.ToTable("Documentation");
 
                 entity.Property(e => e.DocumentationId).HasColumnName("DocumentationID");
